@@ -16,7 +16,7 @@ const (
 	PostgresSqlType = "postgres"
 )
 
-func NewGormDB(info config.GormDatasource) func() (*gorm.DB, error) {
+func GetDatabase(info config.GormDatasource) func() (*gorm.DB, error) {
 	return func() (*gorm.DB, error) {
 		var d gorm.Dialector
 		switch info.Type {
