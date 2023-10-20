@@ -26,7 +26,7 @@ func RunSpf13CobraHttpServer(seq ...func(*Opts)) {
 }
 
 func NewSpf13CobraHttpServer(seq ...func(*Opts)) *cobra.Command {
-	opts := NewOpts(seq)
+	opts := NewOpts(seq...)
 	rootCmd := &cobra.Command{
 		Use:   App,
 		Short: fmt.Sprintf("HTTP Server that exposes %s REST API", opts.api),
@@ -60,18 +60,6 @@ func NewSpf13CobraHttpServer(seq ...func(*Opts)) *cobra.Command {
 	startupCmd.PersistentFlags().String("server-mode", "release", "The mode the server is running")
 	rootCmd.AddCommand(startupCmd)
 	return rootCmd
-}
-
-func NewOpts(seq []func(*Opts)) Opts {
-	opts := Opts{
-		api:       "N/A",
-		options:   make([]fx.Option, 0),
-		factories: make([]func(config config.Config) fx.Option, 0),
-	}
-	for _, e := range seq {
-		e(&opts)
-	}
-	return opts
 }
 
 func NewSpf13CobraHttpServerCommand(opts Opts) func(*cobra.Command, []string) {
