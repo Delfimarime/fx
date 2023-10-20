@@ -8,6 +8,7 @@ type Config struct {
 }
 
 type Server struct {
+	Mode        string   `json:"mode" yaml:"mode" xml:"mode"`
 	Type        string   `json:"type" yaml:"type" xml:"type"`
 	Port        int      `json:"port" yaml:"port" xml:"port"`
 	Accept      []string `json:"accept" yaml:"accept" xml:"accept"`
