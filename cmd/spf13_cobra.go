@@ -63,7 +63,7 @@ func NewSpf13CobraHttpServerCommand(appName string, fxConfig ...fx.Option) func(
 		if err != nil {
 			panic(err)
 		}
-		zapLevel, err := config.ToZapLogLevel(configuration.Level)
+		zapLevel, err := config.ToZapLogLevel(configuration.Logging.Level)
 		if err != nil {
 			panic(err)
 		}
@@ -76,7 +76,11 @@ func NewSpf13CobraHttpServerCommand(appName string, fxConfig ...fx.Option) func(
 		}
 		defer logger.Sync()
 		zap.ReplaceGlobals(logger)
-		fx.New(fxConfig...).Run()
+		fx.New(append(fxConfig, fx.Provide(func() config.Terminal {
+			return configuration
+		}, func(c config.Terminal) config.Config {
+			return c.Config
+		}))...).Run()
 	}
 }
 
