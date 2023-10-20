@@ -16,6 +16,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/fx v1.20.1
 	go.uber.org/zap v1.25.0
+	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/driver/postgres v1.5.3
 	gorm.io/driver/sqlite v1.5.4
@@ -86,5 +87,4 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
