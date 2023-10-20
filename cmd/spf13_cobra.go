@@ -13,18 +13,23 @@ import (
 	"strings"
 )
 
-func RunSpf13CobraHttpServer(appName, description string, f func(config.Terminal) []fx.Option, fxConfig ...fx.Option) {
-	rootCmd := NewSpf13CobraHttpServer(appName, description, f, fxConfig...)
+const (
+	App = "switch"
+)
+
+func RunSpf13CobraHttpServer(seq ...func(*Opts)) {
+	rootCmd := NewSpf13CobraHttpServer(seq...)
 	if err := rootCmd.Execute(); err != nil {
 		zap.L().Error("Stopping server...", zap.Error(err))
 		os.Exit(1)
 	}
 }
 
-func NewSpf13CobraHttpServer(appName, description string, f func(config.Terminal) []fx.Option, fxConfig ...fx.Option) *cobra.Command {
+func NewSpf13CobraHttpServer(seq ...func(*Opts)) *cobra.Command {
+	opts := NewOpts(seq)
 	rootCmd := &cobra.Command{
-		Use:   appName,
-		Short: description,
+		Use:   App,
+		Short: fmt.Sprintf("HTTP Server that exposes %s REST API", opts.api),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			binary, err := os.ReadFile("package.json")
 			if err != nil {
@@ -39,15 +44,15 @@ func NewSpf13CobraHttpServer(appName, description string, f func(config.Terminal
 			if version == "" {
 				version = "N/A"
 			}
-			cmd.Println(fmt.Sprintf("%s\nversion:%s", appName, version))
+			cmd.Println(fmt.Sprintf("%s\nversion:%s\nREST API:%s", App, version, opts.api))
 			return nil
 		},
 	}
 	startupCmd := &cobra.Command{
-		Use:   "start",
-		Short: fmt.Sprintf("Starts the HTTP Server that exposes %s as an API.", appName),
+		Use:   "up",
+		Short: fmt.Sprintf("Starts %s as an HTTP Server to expose %s REST API.", App, opts.api),
 		Args:  cobra.MaximumNArgs(1),
-		Run:   NewSpf13CobraHttpServerCommand(appName, f, fxConfig...),
+		Run:   NewSpf13CobraHttpServerCommand(opts),
 	}
 	// Add flags to the startup command
 	startupCmd.PersistentFlags().String("log-level", "INFO", "Set the logging level (e.g., DEBUG, INFO)")
@@ -57,9 +62,21 @@ func NewSpf13CobraHttpServer(appName, description string, f func(config.Terminal
 	return rootCmd
 }
 
-func NewSpf13CobraHttpServerCommand(appName string, f func(config.Terminal) []fx.Option, fxConfig ...fx.Option) func(*cobra.Command, []string) {
+func NewOpts(seq []func(*Opts)) Opts {
+	opts := Opts{
+		api:       "N/A",
+		options:   make([]fx.Option, 0),
+		factories: make([]func(config config.Config) fx.Option, 0),
+	}
+	for _, e := range seq {
+		e(&opts)
+	}
+	return opts
+}
+
+func NewSpf13CobraHttpServerCommand(opts Opts) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
-		configuration, err := getSpf13CobraTerminalConfiguration(cmd, args, appName)
+		configuration, err := getSpf13CobraTerminalConfiguration(cmd, args)
 		if err != nil {
 			panic(err)
 		}
@@ -76,14 +93,11 @@ func NewSpf13CobraHttpServerCommand(appName string, f func(config.Terminal) []fx
 		}
 		defer logger.Sync()
 		zap.ReplaceGlobals(logger)
-		opts := make([]fx.Option, 0)
-		if f != nil {
-			opts = f(configuration)
+		startOpts := append(opts.options)
+		for _, each := range opts.factories {
+			startOpts = append(startOpts, each(configuration.Config))
 		}
-		if fxConfig != nil {
-			opts = append(opts, fxConfig...)
-		}
-		fx.New(append(opts, fx.Provide(func() config.Terminal {
+		fx.New(append(startOpts, fx.Provide(func() config.Terminal {
 			return configuration
 		}, func(c config.Terminal) config.Config {
 			return c.Config
@@ -91,13 +105,13 @@ func NewSpf13CobraHttpServerCommand(appName string, f func(config.Terminal) []fx
 	}
 }
 
-func getSpf13CobraTerminalConfiguration(cmd *cobra.Command, args []string, appName string) (config.Terminal, error) {
+func getSpf13CobraTerminalConfiguration(cmd *cobra.Command, args []string) (config.Terminal, error) {
 	configURI := ""
 	if len(args) > 0 {
 		configURI = args[0]
 	}
 	if configURI == "" {
-		value := os.Getenv(strings.ToUpper(fmt.Sprintf("%s_HOME", appName)))
+		value := os.Getenv(strings.ToUpper(fmt.Sprintf("%s_HOME", App)))
 		if value == "" {
 			value = "."
 		}
