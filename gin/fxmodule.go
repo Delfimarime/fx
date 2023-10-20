@@ -41,7 +41,9 @@ func New(c config.Config) fx.Option {
 	}
 	gin.SetMode(mode)
 	return fx.Module(module, fx.Provide(
-		e,
+		func() *gin.Engine {
+			return e
+		},
 		func() gin.HandlerFunc {
 			return ginzap.RecoveryWithZap(zap.L(), true)
 		},
