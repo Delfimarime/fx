@@ -4,7 +4,7 @@ type Config struct {
 	Name    string                    `json:"name" yaml:"name" xml:"name"`
 	Server  Server                    `json:"server" yaml:"server" xml:"server"`
 	Gorm    map[string]GormDatasource `json:"gorm,omitempty" yaml:"gorm,omitempty"`
-	Channel map[string]Channel        `json:"channel,omitempty" yaml:"channel,omitempty"`
+	Channel map[string]Channel        `json:"messaging_channel,omitempty" yaml:"messaging_channel,omitempty"`
 }
 
 type Server struct {

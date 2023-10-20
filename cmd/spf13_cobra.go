@@ -81,10 +81,11 @@ func NewSpf13CobraHttpServerCommand(opts Opts) func(*cobra.Command, []string) {
 		}
 		defer logger.Sync()
 		zap.ReplaceGlobals(logger)
-		startOpts := append(opts.options)
+		startOpts := make([]fx.Option, 0)
 		for _, each := range opts.factories {
 			startOpts = append(startOpts, each(configuration.Config))
 		}
+		startOpts = append(startOpts, opts.options...)
 		fx.New(append(startOpts, fx.Provide(func() config.Terminal {
 			return configuration
 		}, func(c config.Terminal) config.Config {
