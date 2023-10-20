@@ -13,15 +13,15 @@ import (
 	"strings"
 )
 
-func RunSpf13CobraHttpServer(appName, description string, fxConfig ...fx.Option) {
-	rootCmd := NewSpf13CobraHttpServer(appName, description, fxConfig...)
+func RunSpf13CobraHttpServer(appName, description string, f func(config.Terminal) []fx.Option, fxConfig ...fx.Option) {
+	rootCmd := NewSpf13CobraHttpServer(appName, description, f, fxConfig...)
 	if err := rootCmd.Execute(); err != nil {
 		zap.L().Error("Stopping server...", zap.Error(err))
 		os.Exit(1)
 	}
 }
 
-func NewSpf13CobraHttpServer(appName, description string, fxConfig ...fx.Option) *cobra.Command {
+func NewSpf13CobraHttpServer(appName, description string, f func(config.Terminal) []fx.Option, fxConfig ...fx.Option) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   appName,
 		Short: description,
@@ -47,7 +47,7 @@ func NewSpf13CobraHttpServer(appName, description string, fxConfig ...fx.Option)
 		Use:   "start",
 		Short: fmt.Sprintf("Starts the HTTP Server that exposes %s as an API.", appName),
 		Args:  cobra.MaximumNArgs(1),
-		Run:   NewSpf13CobraHttpServerCommand(appName, fxConfig...),
+		Run:   NewSpf13CobraHttpServerCommand(appName, f, fxConfig...),
 	}
 	// Add flags to the startup command
 	startupCmd.PersistentFlags().String("log-level", "INFO", "Set the logging level (e.g., DEBUG, INFO)")
@@ -57,7 +57,7 @@ func NewSpf13CobraHttpServer(appName, description string, fxConfig ...fx.Option)
 	return rootCmd
 }
 
-func NewSpf13CobraHttpServerCommand(appName string, fxConfig ...fx.Option) func(*cobra.Command, []string) {
+func NewSpf13CobraHttpServerCommand(appName string, f func(config.Terminal) []fx.Option, fxConfig ...fx.Option) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
 		configuration, err := getSpf13CobraTerminalConfiguration(cmd, args, appName)
 		if err != nil {
@@ -76,7 +76,14 @@ func NewSpf13CobraHttpServerCommand(appName string, fxConfig ...fx.Option) func(
 		}
 		defer logger.Sync()
 		zap.ReplaceGlobals(logger)
-		fx.New(append(fxConfig, fx.Provide(func() config.Terminal {
+		opts := make([]fx.Option, 0)
+		if f != nil {
+			opts = f(configuration)
+		}
+		if fxConfig != nil {
+			opts = append(opts, fxConfig...)
+		}
+		fx.New(append(opts, fx.Provide(func() config.Terminal {
 			return configuration
 		}, func(c config.Terminal) config.Config {
 			return c.Config
