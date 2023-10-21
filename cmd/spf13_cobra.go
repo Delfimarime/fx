@@ -86,11 +86,12 @@ func NewSpf13CobraHttpServerCommand(opts Opts) func(*cobra.Command, []string) {
 			startOpts = append(startOpts, each(configuration.Config))
 		}
 		startOpts = append(startOpts, opts.options...)
-		fx.New(append(startOpts, fx.Provide(func() config.Terminal {
+		startOpts = append(startOpts, fx.Provide(func() config.Terminal {
 			return configuration
 		}, func(c config.Terminal) config.Config {
 			return c.Config
-		}))...).Run()
+		}))
+		fx.New(startOpts...).Run()
 	}
 }
 

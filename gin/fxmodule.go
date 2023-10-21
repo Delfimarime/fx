@@ -24,27 +24,27 @@ func New(c config.Config) fx.Option {
 	if c.Server.Type != "" && c.Server.Type != "gin" {
 		return fx.Module(module)
 	}
-	e := gin.Default()
-	e.Use(gin.Logger())
-	e.Use(gin.Recovery())
-	e.Use(TryAndCatchHandler())
-	if c.Server.Accept == nil {
-		e.Use(AcceptMiddleware(ApplicationJSONType, ApplicationProblemType, ApplicationProblemJSONType))
-	} else {
-		e.Use(AcceptMiddleware(c.Server.Accept...))
-	}
-	if c.Server.ContentType == nil {
-		e.Use(ContentTypeMiddleware(ApplicationJSONType))
-	} else {
-		e.Use(ContentTypeMiddleware(c.Server.ContentType...))
-	}
-	mode := c.Server.Mode
-	if mode == "" {
-		mode = gin.ReleaseMode
-	}
-	gin.SetMode(mode)
 	return fx.Module(module, fx.Provide(
 		func() *gin.Engine {
+			e := gin.Default()
+			e.Use(gin.Logger())
+			e.Use(gin.Recovery())
+			e.Use(TryAndCatchHandler())
+			if c.Server.Accept == nil {
+				e.Use(AcceptMiddleware(ApplicationJSONType, ApplicationProblemType, ApplicationProblemJSONType))
+			} else {
+				e.Use(AcceptMiddleware(c.Server.Accept...))
+			}
+			if c.Server.ContentType == nil {
+				e.Use(ContentTypeMiddleware(ApplicationJSONType))
+			} else {
+				e.Use(ContentTypeMiddleware(c.Server.ContentType...))
+			}
+			mode := c.Server.Mode
+			if mode == "" {
+				mode = gin.ReleaseMode
+			}
+			gin.SetMode(mode)
 			return e
 		},
 		func() gin.HandlerFunc {
@@ -53,14 +53,22 @@ func New(c config.Config) fx.Option {
 		func() gin.HandlerFunc {
 			return ginzap.Ginzap(zap.L(), time.RFC3339, true)
 		},
-		func(e *gin.Engine, f ...gin.HandlerFunc) {
+		fx.Invoke(func(e *gin.Engine, f ...gin.HandlerFunc) {
 			for _, each := range f {
 				e.Use(each)
 			}
-		},
-		fx.Invoke(func(e *gin.Engine) error {
-			return e.Run(fmt.Sprintf("%d", c.Server.Port))
 		}),
 	))
+}
 
+func StartFxGin(c config.Config) fx.Option {
+	return fx.Invoke(func(e *gin.Engine) error {
+		if !c.Server.Enabled {
+			return nil
+		}
+		if c.Server.Type != "" && c.Server.Type != "gin" {
+			return nil
+		}
+		return e.Run(fmt.Sprintf("%d", c.Server.Port))
+	})
 }
