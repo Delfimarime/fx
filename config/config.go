@@ -12,7 +12,6 @@ type Server struct {
 	Type        string   `json:"type" yaml:"type" xml:"type"`
 	Port        int      `json:"port" yaml:"port" xml:"port"`
 	Accept      []string `json:"accept" yaml:"accept" xml:"accept"`
-	Enabled     bool     `json:"is_enabled" yaml:"is_enabled" xml:"is_enabled"`
 	ContentType []string `json:"content-type" yaml:"content-type" xml:"content-type"`
 }
 
