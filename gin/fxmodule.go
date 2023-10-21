@@ -18,7 +18,10 @@ const (
 const module = "gin"
 
 func New(c config.Config) fx.Option {
-	if !c.Server.Enabled || c.Server.Type != "gin" {
+	if !c.Server.Enabled {
+		return fx.Module(module)
+	}
+	if c.Server.Type != "" && c.Server.Type != "gin" {
 		return fx.Module(module)
 	}
 	e := gin.Default()
