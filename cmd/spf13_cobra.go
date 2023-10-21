@@ -17,17 +17,31 @@ const (
 	App = "switch"
 )
 
-func RunSpf13CobraHttpServer(seq ...func(*Opts)) {
-	rootCmd := NewSpf13CobraHttpServer(seq...)
+func RunHttpServerSpf13CobraCommand(seq ...func(*Opts)) {
+	rootCmd := NewHttpServerSpf13CobraCommand(seq...)
 	if err := rootCmd.Execute(); err != nil {
-		zap.L().Error("Stopping server...", zap.Error(err))
 		os.Exit(1)
 	}
 }
 
-func NewSpf13CobraHttpServer(seq ...func(*Opts)) *cobra.Command {
+func RunSpf13CobraCommand(f func(Opts) *cobra.Command, seq ...func(*Opts)) {
 	opts := NewOpts(seq...)
-	rootCmd := &cobra.Command{
+	rootCmd := f(opts)
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func NewHttpServerSpf13CobraCommand(seq ...func(*Opts)) *cobra.Command {
+	opts := NewOpts(seq...)
+	rootCmd := NewRootSpf13CobraCommand(opts)
+	startupCmd := NewStartServerSpf13CobraCommand(opts)
+	rootCmd.AddCommand(startupCmd)
+	return rootCmd
+}
+
+func NewRootSpf13CobraCommand(opts Opts) *cobra.Command {
+	return &cobra.Command{
 		Use:   App,
 		Short: fmt.Sprintf("HTTP Server that exposes %s REST API", opts.api),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -48,21 +62,23 @@ func NewSpf13CobraHttpServer(seq ...func(*Opts)) *cobra.Command {
 			return nil
 		},
 	}
+}
+
+func NewStartServerSpf13CobraCommand(opts Opts) *cobra.Command {
 	startupCmd := &cobra.Command{
 		Use:   "up",
 		Short: fmt.Sprintf("Starts %s as an HTTP Server to expose %s REST API.", App, opts.api),
 		Args:  cobra.MaximumNArgs(1),
-		Run:   NewSpf13CobraHttpServerCommand(opts),
+		Run:   ExecuteStartServerSpf13CobraCommand(opts),
 	}
 	// Add flags to the startup command
 	startupCmd.PersistentFlags().String("log-level", "INFO", "Set the logging level (e.g., DEBUG, INFO)")
 	startupCmd.PersistentFlags().Int("server-port", 8080, "Port on which the server runs")
 	startupCmd.PersistentFlags().String("server-mode", "release", "The mode the server is running")
-	rootCmd.AddCommand(startupCmd)
-	return rootCmd
+	return startupCmd
 }
 
-func NewSpf13CobraHttpServerCommand(opts Opts) func(*cobra.Command, []string) {
+func ExecuteStartServerSpf13CobraCommand(opts Opts) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
 		configuration, err := getSpf13CobraTerminalConfiguration(cmd, args)
 		if err != nil {
