@@ -65,13 +65,13 @@ func (instance *PulsarChannel) Accept(event Event) error {
 
 func NewPulsarChannel(config config.Channel) (Channel, error) {
 	opts := pulsar.ClientOptions{
-		URL: config.Pulsar.Host,
+		URL: config.Host,
 	}
 	err := configureTLSForPulsar(&opts, config)
 	if err != nil {
 		return nil, err
 	}
-	switch config.SecurityMechanism {
+	switch config.ChannelSecurity.Mechanism {
 	case TokenAuthenticationType:
 		opts.Authentication = pulsar.NewAuthenticationToken(config.Pulsar.Token)
 	case TLSAuthenticationType:
@@ -91,15 +91,15 @@ func NewPulsarChannel(config config.Channel) (Channel, error) {
 }
 
 func configureTLSForPulsar(opts *pulsar.ClientOptions, config config.Channel) error {
-	if config.TLSOptions.RootCA.URI != "" || config.SecurityMechanism == TLSAuthenticationType {
+	if config.TLSOptions.RootCA.URI != "" || config.ChannelSecurity.Mechanism == TLSAuthenticationType {
 		opts.TLSTrustCertsFilePath = config.TLSOptions.RootCA.URI
 		opts.URL = fmt.Sprintf("pulsar://%s", opts.URL)
 	} else {
 		opts.URL = fmt.Sprintf("pulsar+ssl://%s", opts.URL)
 	}
-	if config.SecurityMechanism == TLSAuthenticationType {
+	if config.ChannelSecurity.Mechanism == TLSAuthenticationType {
 		opts.TLSAllowInsecureConnection = config.TLSOptions.SkipVerification
-		opts.Authentication = pulsar.NewAuthenticationTLS(config.ClientCertificate.URI, config.ClientKey.URI)
+		opts.Authentication = pulsar.NewAuthenticationTLS(config.ChannelSecurity.ClientCertificate.URI, config.ChannelSecurity.ClientKey.URI)
 	}
 	return nil
 }

@@ -24,28 +24,12 @@ type Loader struct {
 	object  *Config
 }
 
-func (instance *Loader) GetConfiguration() Config {
-	if instance.object == nil {
-		ptr := &Config{}
-		err := instance.ReadConfiguration(ptr)
-		if err != nil {
-			panic(err)
-		}
-		instance.object = ptr
-	}
-	return *instance.object
-}
-
-func (instance *Loader) ReadConfiguration(ptr any) error {
+func (instance *Loader) ReadConfiguration(ptr interface{}) error {
 	return doGetConfiguration(instance.fileURI, ptr)
 }
 
-func doGetConfiguration(fileURI string, ptr any) error {
-	configURI := "./config.yaml"
-	if fileURI != "" {
-		configURI = fileURI
-	}
-	binary, err := os.ReadFile(configURI)
+func doGetConfiguration(fileURI string, ptr interface{}) error {
+	binary, err := os.ReadFile(fileURI)
 	if err != nil {
 		return err
 	}
@@ -53,7 +37,7 @@ func doGetConfiguration(fileURI string, ptr any) error {
 	if err != nil {
 		return err
 	}
-	if strings.HasSuffix(configURI, ".json") {
+	if strings.HasSuffix(fileURI, ".json") {
 		err = json.Unmarshal([]byte(content), ptr)
 	} else {
 		err = yaml.Unmarshal([]byte(content), ptr)

@@ -41,21 +41,16 @@ func New(c config.Config) fx.Option {
 			if mode == "" {
 				mode = gin.ReleaseMode
 			}
+			e.Use(ginzap.RecoveryWithZap(zap.L(), true))
+			e.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
 			gin.SetMode(mode)
 			return e
-		},
-		func() gin.HandlerFunc {
-			return ginzap.RecoveryWithZap(zap.L(), true)
-		},
-		func() gin.HandlerFunc {
-			return ginzap.Ginzap(zap.L(), time.RFC3339, true)
-		},
-		fx.Invoke(func(e *gin.Engine, f ...gin.HandlerFunc) {
-			for _, each := range f {
-				e.Use(each)
-			}
-		}),
-	))
+		}), fx.Invoke(func(e *gin.Engine, f ...gin.HandlerFunc) {
+		for _, each := range f {
+			e.Use(each)
+		}
+	}),
+	)
 }
 
 func StartFxGin(c config.Config) fx.Option {
@@ -63,6 +58,6 @@ func StartFxGin(c config.Config) fx.Option {
 		if c.Server.Type != "" && c.Server.Type != "gin" {
 			return nil
 		}
-		return e.Run(fmt.Sprintf("%d", c.Server.Port))
+		return e.Run(fmt.Sprintf(":%d", c.Server.Port))
 	})
 }

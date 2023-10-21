@@ -105,7 +105,7 @@ func ExecuteStartServerSpf13CobraCommand(opts Opts) func(*cobra.Command, []strin
 		startOpts = append(startOpts, fx.Provide(func() config.Terminal {
 			return configuration
 		}, func(c config.Terminal) config.Config {
-			return c.Config
+			return configuration.Config
 		}))
 		fx.New(startOpts...).Run()
 	}
@@ -139,7 +139,7 @@ func getSpf13CobraTerminalConfiguration(cmd *cobra.Command, args []string) (conf
 		if err != nil {
 			return config.Terminal{}, errors.New("--server-port must be an integer(64)")
 		}
-		target.Config.Server.Port = int(serverPort)
+		target.Server.Port = int(serverPort)
 	}
 	valueOf, _ = cmd.Flags().GetString("server-mode")
 	if valueOf != "" {

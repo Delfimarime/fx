@@ -11,13 +11,17 @@ func New(c config.Config) fx.Option {
 	}
 	sup := func(name string, info config.Channel) any {
 		return fx.Annotated{
-			Name:   name,
-			Target: GetChannelFrom(info),
+			Name: name,
+			Target: func() (Channel, error) {
+				return GetChannelFrom(info)
+			},
 		}
 	}
 	if len(c.Channel) == 1 {
 		sup = func(name string, info config.Channel) any {
-			return GetChannelFrom(info)
+			return func() (Channel, error) {
+				return GetChannelFrom(info)
+			}
 		}
 	}
 	opts := make([]any, 0)

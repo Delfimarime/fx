@@ -1,13 +1,13 @@
 package config
 
 type Terminal struct {
-	Config
+	Config  `yaml:",inline"`
 	Logging Logging `json:"logging,omitempty" yaml:"logging,omitempty" xml:"logging,omitempty"`
 	Service Service `json:"service,omitempty" yaml:"service,omitempty" xml:"service,omitempty"`
 }
 
 type Logging struct {
-	Level string `json:"level,omitempty" yaml:"name,omitempty" xml:"name,omitempty"`
+	Level string `json:"level,omitempty" yaml:"level,omitempty" xml:"level,omitempty"`
 }
 
 type Service struct {

@@ -16,37 +16,31 @@ type Server struct {
 }
 
 type Channel struct {
-	Kafka
-	Pulsar
-	Rabbitmq
-	ChannelAuthentication
-	Topic      string     `json:"topic,omitempty" yaml:"topic,omitempty"`
-	TLSOptions TLSOptions `json:"tls,omitempty" yaml:"tls,omitempty"`
-	Type       string     `json:"type,omitempty" yaml:"type,omitempty"`
+	Pulsar          `yaml:",inline"`
+	Rabbitmq        `yaml:",inline"`
+	TLSOptions      TLSOptions      `json:"tls,omitempty" yaml:"tls,omitempty"`
+	Host            string          `json:"host,omitempty" yaml:"host,omitempty"`
+	Type            string          `json:"type,omitempty" yaml:"type,omitempty"`
+	Topic           string          `json:"topic,omitempty" yaml:"topic,omitempty"`
+	ChannelSecurity ChannelSecurity `json:"authentication,omitempty" yaml:"authentication,omitempty"`
 }
 
 type Rabbitmq struct {
-	Host       string `json:"host,omitempty" yaml:"host,omitempty"`
 	Exchange   string `json:"exchange,omitempty" yaml:"exchange,omitempty"`
 	RoutingKey string `json:"routing_key,omitempty" yaml:"routing_key,omitempty"`
 }
 
-type Kafka struct {
-	Host string `json:"host,omitempty" yaml:"host,omitempty"`
-}
-
 type Pulsar struct {
-	Host           string `json:"host,omitempty" yaml:"host,omitempty"`
 	Token          string `json:"token,omitempty" yaml:"token,omitempty"`
 	TrustCertsFile File   `json:"trust_certs,omitempty" yaml:"trust_certs,omitempty"`
 }
 
-type ChannelAuthentication struct {
+type ChannelSecurity struct {
 	Username          string `json:"username,omitempty" yaml:"username,omitempty"`
 	Password          string `json:"password,omitempty" yaml:"password,omitempty"`
 	ClientKey         File   `json:"client_key,omitempty" yaml:"client_key,omitempty"`
 	ClientCertificate File   `json:"client_certificate,omitempty" yaml:"certificate,omitempty"`
-	SecurityMechanism string `json:"security_mechanism,omitempty" yaml:"security_mechanism,omitempty"`
+	Mechanism         string `json:"security_mechanism,omitempty" yaml:"security_mechanism,omitempty"`
 }
 
 type TLSOptions struct {

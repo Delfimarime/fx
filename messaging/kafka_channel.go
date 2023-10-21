@@ -76,16 +76,16 @@ func NewKafkaChannel(config config.Channel) (Channel, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch config.SecurityMechanism {
+	switch config.ChannelSecurity.Mechanism {
 	case ClientAuthenticationType:
-		kafkaConfig.Net.SASL.User = config.Username
-		kafkaConfig.Net.SASL.Password = config.Password
+		kafkaConfig.Net.SASL.User = config.ChannelSecurity.Username
+		kafkaConfig.Net.SASL.Password = config.ChannelSecurity.Password
 	case TLSAuthenticationType:
 		// Handled inside the configureTLSForKafka function
 	default:
 		return nil, newSecurityMechanismError(config, ClientAuthenticationType, TLSAuthenticationType)
 	}
-	producer, err := sarama.NewSyncProducer([]string{config.Kafka.Host}, kafkaConfig)
+	producer, err := sarama.NewSyncProducer([]string{config.Host}, kafkaConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +93,8 @@ func NewKafkaChannel(config config.Channel) (Channel, error) {
 }
 
 func configureTLSForKafka(kafkaConfig *sarama.Config, config config.Channel) error {
-	if config.SecurityMechanism == TLSAuthenticationType {
-		cert, err := tls.LoadX509KeyPair(config.ClientCertificate.URI, config.ClientKey.URI)
+	if config.ChannelSecurity.Mechanism == TLSAuthenticationType {
+		cert, err := tls.LoadX509KeyPair(config.ChannelSecurity.ClientCertificate.URI, config.ChannelSecurity.ClientKey.URI)
 		if err != nil {
 			return err
 		}

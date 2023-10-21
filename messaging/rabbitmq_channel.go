@@ -76,12 +76,12 @@ func (instance *RabbitmqChannel) Accept(event Event) error {
 
 func NewRabbitmqChannel(config config.Channel) (Channel, error) {
 	var host string
-	switch config.SecurityMechanism {
+	switch config.ChannelSecurity.Mechanism {
 	case NoneAuthenticationType:
-		host = fmt.Sprintf("amqp://%s/", config.Rabbitmq.Host)
+		host = fmt.Sprintf("amqp://%s/", config.Host)
 	case ClientAuthenticationType:
 		host = fmt.Sprintf("amqp://%s:%s@%s/",
-			config.Username, config.Password, config.Rabbitmq.Host)
+			config.ChannelSecurity.Username, config.ChannelSecurity.Password, config.Host)
 	default:
 		return nil, newSecurityMechanismError(config, "rabbitmq", NoneAuthenticationType, ClientAuthenticationType)
 	}
