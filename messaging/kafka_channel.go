@@ -32,7 +32,7 @@ func (instance *KafkaChannel) Close() error {
 	return nil
 }
 
-func (instance *KafkaChannel) Accept(event Event) error {
+func (instance *KafkaChannel) Accept(event Message) error {
 	binary, err := json.Marshal(event)
 	if err != nil {
 		zap.L().Error("cannot marshal event",
@@ -67,6 +67,13 @@ func (instance *KafkaChannel) Accept(event Event) error {
 		zap.Int64("kafka_offset", offset),
 	)
 	return nil
+}
+
+func NewKafkaTypedFactory() TypedFactory {
+	return TypedFactory{
+		Type:    KafkaType,
+		Factory: NewKafkaChannel,
+	}
 }
 
 func NewKafkaChannel(config config.Channel) (Channel, error) {

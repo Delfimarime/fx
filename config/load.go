@@ -21,7 +21,6 @@ func NewConfigLoader(configURI string) Loader {
 type Loader struct {
 	binary  []byte
 	fileURI string
-	object  *Config
 }
 
 func (instance *Loader) ReadConfiguration(ptr interface{}) error {

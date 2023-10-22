@@ -37,7 +37,7 @@ func TestRabbitmqChannel_Accept(t *testing.T) {
 		}
 		defer mockChannel.AssertExpectations(t)
 	}
-	event := Event{
+	event := Message{
 		Id:          uuid.NewString(),
 		Type:        "test",
 		Domain:      "unit-testing",
