@@ -18,3 +18,15 @@ func NewMysqlTypedFactory() TypedFactory {
 		},
 	}
 }
+
+func NewMariaDbTypedFactory() TypedFactory {
+	return TypedFactory{
+		Type: MariadbType,
+		Factory: func(c config.Config) (*gorm.DB, error) {
+			dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+				c.Data.Gorm.Authentication.Username, c.Data.Gorm.Authentication.Password,
+				c.Data.Gorm.URL, c.Data.Gorm.Database)
+			return gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		},
+	}
+}

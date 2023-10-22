@@ -25,6 +25,12 @@ type TypedFactory struct {
 	Factory DbFactory
 }
 
+func From(r ...TypedFactory) func(config.Config) fx.Option {
+	return func(c config.Config) fx.Option {
+		return New(c, r...)
+	}
+}
+
 func New(c config.Config, r ...TypedFactory) fx.Option {
 	if c.Data.Gorm == nil {
 		return fx.Module(module)
