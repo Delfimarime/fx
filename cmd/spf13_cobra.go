@@ -7,6 +7,7 @@ import (
 	"github.com/delfimarime/fx/config"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 	"os"
 	"strconv"
@@ -97,7 +98,11 @@ func ExecuteStartServerSpf13CobraCommand(opts Opts) func(*cobra.Command, []strin
 		}
 		defer logger.Sync()
 		zap.ReplaceGlobals(logger)
-		startOpts := make([]fx.Option, 0)
+		startOpts := []fx.Option{
+			fx.WithLogger(func() fxevent.Logger {
+				return &fxevent.ZapLogger{Logger: logger}
+			}),
+		}
 		for _, each := range opts.factories {
 			startOpts = append(startOpts, each(configuration.Config))
 		}
