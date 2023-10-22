@@ -1,32 +1,46 @@
 package messaging
 
 import (
+	"fmt"
 	"github.com/delfimarime/fx/config"
 	"go.uber.org/fx"
 )
 
-func New(c config.Config) fx.Option {
-	if c.Channel == nil {
+const (
+	module = "channel"
+)
+
+type ChannelFactory func(channel config.Channel) (Channel, error)
+
+type TypedFactory struct {
+	Type    string
+	Factory ChannelFactory
+}
+
+func New(c config.Config, r ...TypedFactory) fx.Option {
+	if c.Integrations == nil {
 		return fx.Module(module)
 	}
-	sup := func(name string, info config.Channel) any {
-		return fx.Annotated{
-			Name: name,
-			Target: func() (Channel, error) {
-				return GetChannelFrom(info)
-			},
-		}
-	}
-	if len(c.Channel) == 1 {
-		sup = func(name string, info config.Channel) any {
-			return func() (Channel, error) {
-				return GetChannelFrom(info)
+	opts := make([]any, 0)
+	for key, cfg := range c.Integrations {
+		var f ChannelFactory
+		for _, info := range r {
+			if info.Type == cfg.Type {
+				f = info.Factory
+				break
 			}
 		}
-	}
-	opts := make([]any, 0)
-	for key, info := range c.Channel {
-		opts = append(opts, sup(key, info))
+		if f == nil {
+			f = func(cnf config.Channel) (Channel, error) {
+				return nil, fmt.Errorf(`type="%s" not supported for $.integrations["%s"]`, cfg.Type, key)
+			}
+		}
+		opts = append(opts, fx.Annotated{
+			Name: key,
+			Target: func() (Channel, error) {
+				return f(cfg)
+			},
+		})
 	}
 	return fx.Module(module, fx.Provide(opts...))
 }

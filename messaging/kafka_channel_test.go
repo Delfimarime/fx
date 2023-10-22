@@ -35,7 +35,7 @@ func TestKafkaChannel_Accept(t *testing.T) {
 	}
 	t.Run("accept with successful message send", func(t *testing.T) {
 		setup()
-		event := Event{Id: "123", Type: "test"}
+		event := Message{Id: "123", Type: "test"}
 		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(1), nil)
 
 		err := kafkaChannel.Accept(event)
@@ -44,7 +44,7 @@ func TestKafkaChannel_Accept(t *testing.T) {
 	})
 	t.Run("accept with send message error", func(t *testing.T) {
 		setup()
-		event := Event{Id: "123", Type: "test"}
+		event := Message{Id: "123", Type: "test"}
 		mockProducer.On("SendMessage", mock.Anything).Return(int32(0), int64(0), errors.New("send error"))
 
 		err := kafkaChannel.Accept(event)

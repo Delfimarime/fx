@@ -31,7 +31,7 @@ func (instance *RabbitmqChannel) Close() error {
 	return nil
 }
 
-func (instance *RabbitmqChannel) Accept(event Event) error {
+func (instance *RabbitmqChannel) Accept(event Message) error {
 	bytes, err := json.Marshal(event)
 	if err != nil {
 		zap.L().Error("cannot marshal event",
@@ -72,6 +72,13 @@ func (instance *RabbitmqChannel) Accept(event Event) error {
 		zap.String("component", "rabbitmq_channel"),
 	)
 	return nil
+}
+
+func NewRabbitmqTypedFactory() TypedFactory {
+	return TypedFactory{
+		Type:    RabbitmqType,
+		Factory: NewRabbitmqChannel,
+	}
 }
 
 func NewRabbitmqChannel(config config.Channel) (Channel, error) {

@@ -35,7 +35,7 @@ func TestPulsarChannel_Accept(t *testing.T) {
 	}
 	t.Run("accept with successful message send", func(t *testing.T) {
 		setup()
-		event := Event{Id: "123", Type: "test"}
+		event := Message{Id: "123", Type: "test"}
 		mockProducer.On("SendAndGetMsgID", mock.Anything, mock.Anything).Return(&mockMessageID{}, nil)
 
 		err := pulsarChannel.Accept(event)
@@ -44,7 +44,7 @@ func TestPulsarChannel_Accept(t *testing.T) {
 	})
 	t.Run("accept with send message error", func(t *testing.T) {
 		setup()
-		event := Event{Id: "123", Type: "test"}
+		event := Message{Id: "123", Type: "test"}
 		mockProducer.On("SendAndGetMsgID", mock.Anything, mock.Anything).Return(mockMessageID{}, errors.New("send error"))
 		err := pulsarChannel.Accept(event)
 		assert.Equal(t, "send error", err.Error())

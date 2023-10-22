@@ -5,7 +5,7 @@ import (
 	"github.com/delfimarime/fx/time"
 )
 
-type Event struct {
+type Message struct {
 	Id          string           `json:"id,omitempty" yaml:"id,omitempty"`
 	Type        string           `json:"type,omitempty" yaml:"type,omitempty"`
 	Domain      string           `json:"domain,omitempty" yaml:"domain,omitempty"`

@@ -30,7 +30,7 @@ func (instance *PulsarChannel) Close() error {
 	return nil
 }
 
-func (instance *PulsarChannel) Accept(event Event) error {
+func (instance *PulsarChannel) Accept(event Message) error {
 	bytes, err := json.Marshal(event)
 	if err != nil {
 		zap.L().Error("cannot marshal event",
@@ -61,6 +61,13 @@ func (instance *PulsarChannel) Accept(event Event) error {
 		zap.ByteString("pulsar_id", messageId.Serialize()),
 	)
 	return nil
+}
+
+func NewPulsarTypedFactory() TypedFactory {
+	return TypedFactory{
+		Type:    PulsarType,
+		Factory: NewPulsarChannel,
+	}
 }
 
 func NewPulsarChannel(config config.Channel) (Channel, error) {

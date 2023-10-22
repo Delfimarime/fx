@@ -9,5 +9,5 @@ const (
 type Channel interface {
 	Close() error
 	GetType() string
-	Accept(event Event) error
+	Accept(event Message) error
 }

@@ -1,10 +1,13 @@
 package config
 
 type Config struct {
-	Name    string                    `json:"name" yaml:"name" xml:"name"`
-	Server  Server                    `json:"server" yaml:"server" xml:"server"`
-	Gorm    map[string]GormDatasource `json:"gorm,omitempty" yaml:"gorm,omitempty"`
-	Channel map[string]Channel        `json:"messaging_channel,omitempty" yaml:"messaging_channel,omitempty"`
+	Data         Data               `json:"data" yaml:"data" xml:"data"`
+	Server       Server             `json:"server" yaml:"server" xml:"server"`
+	Integrations map[string]Channel `json:"integrations" yaml:"integrations" xml:"integrations"`
+}
+
+type Data struct {
+	Gorm *GormDb `json:"gorm,omitempty" yaml:"gorm,omitempty"`
 }
 
 type Server struct {
@@ -36,11 +39,10 @@ type Pulsar struct {
 }
 
 type ChannelSecurity struct {
-	Username          string `json:"username,omitempty" yaml:"username,omitempty"`
-	Password          string `json:"password,omitempty" yaml:"password,omitempty"`
-	ClientKey         File   `json:"client_key,omitempty" yaml:"client_key,omitempty"`
-	ClientCertificate File   `json:"client_certificate,omitempty" yaml:"certificate,omitempty"`
-	Mechanism         string `json:"security_mechanism,omitempty" yaml:"security_mechanism,omitempty"`
+	BasicAuthentication `yaml:",inline"`
+	ClientKey           File   `json:"client_key,omitempty" yaml:"client_key,omitempty"`
+	ClientCertificate   File   `json:"client_certificate,omitempty" yaml:"certificate,omitempty"`
+	Mechanism           string `json:"security_mechanism,omitempty" yaml:"security_mechanism,omitempty"`
 }
 
 type TLSOptions struct {
@@ -49,15 +51,15 @@ type TLSOptions struct {
 	SkipHostnameVerification bool `json:"skip_hostname_verification,omitempty" yaml:"skip_hostname_verification,omitempty"`
 }
 
-type GormDatasource struct {
-	Type           string                       `json:"type,omitempty" yaml:"type,omitempty"`
-	URL            string                       `json:"url,omitempty" yaml:"url,omitempty"`
-	Host           string                       `json:"host,omitempty" yaml:"host,omitempty"`
-	Database       string                       `json:"database,omitempty" yaml:"database,omitempty"`
-	Authentication GormDatasourceAuthentication `json:"authentication,omitempty" yaml:"authentication,omitempty"`
+type GormDb struct {
+	Type           string              `json:"type,omitempty" yaml:"type,omitempty"`
+	URL            string              `json:"url,omitempty" yaml:"url,omitempty"`
+	Host           string              `json:"host,omitempty" yaml:"host,omitempty"`
+	Database       string              `json:"database,omitempty" yaml:"database,omitempty"`
+	Authentication BasicAuthentication `json:"authentication,omitempty" yaml:"authentication,omitempty"`
 }
 
-type GormDatasourceAuthentication struct {
+type BasicAuthentication struct {
 	Username string `json:"username,omitempty" yaml:"username,omitempty"`
 	Password string `json:"password,omitempty" yaml:"password,omitempty"`
 }
