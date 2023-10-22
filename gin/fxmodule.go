@@ -23,6 +23,11 @@ func New(c config.Config) fx.Option {
 	}
 	return fx.Module(module, fx.Provide(
 		func() *gin.Engine {
+			mode := c.Server.Mode
+			if mode == "" {
+				mode = gin.ReleaseMode
+			}
+			gin.SetMode(mode)
 			e := gin.Default()
 			e.Use(gin.Logger())
 			e.Use(gin.Recovery())
@@ -37,13 +42,8 @@ func New(c config.Config) fx.Option {
 			} else {
 				e.Use(ContentTypeMiddleware(c.Server.ContentType...))
 			}
-			mode := c.Server.Mode
-			if mode == "" {
-				mode = gin.ReleaseMode
-			}
 			e.Use(ginzap.RecoveryWithZap(zap.L(), true))
 			e.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
-			gin.SetMode(mode)
 			return e
 		}), fx.Invoke(func(e *gin.Engine, f ...gin.HandlerFunc) {
 		for _, each := range f {
